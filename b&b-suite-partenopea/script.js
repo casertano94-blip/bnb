@@ -17,6 +17,10 @@
     const style = document.createElement("style");
     style.id = "mobile-rooms-services-style";
     style.textContent = `
+      .rooms-swipe-hint {
+        display: none;
+      }
+
       @media (max-width: 760px) {
         .rooms,
         .gallery,
@@ -58,6 +62,32 @@
 
         .rooms .room-card img {
           aspect-ratio: 1.18;
+        }
+
+        .rooms-swipe-hint {
+          display: flex;
+          width: fit-content;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin: 2px auto 0;
+          border: 1px solid rgba(23, 38, 59, 0.12);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.76);
+          color: var(--color-sage-dark);
+          box-shadow: 0 12px 28px rgba(23, 38, 59, 0.08);
+          padding: 8px 13px;
+          font-size: 0.76rem;
+          font-weight: 850;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .rooms-swipe-hint-arrow {
+          display: inline-block;
+          font-size: 1rem;
+          line-height: 1;
+          animation: roomHintArrow 1.35s ease-in-out infinite;
         }
 
         .services .section-heading,
@@ -145,6 +175,17 @@
           transition-delay: 0ms !important;
         }
 
+        @keyframes roomHintArrow {
+          0%, 100% {
+            transform: translateX(0);
+            opacity: 0.72;
+          }
+          50% {
+            transform: translateX(4px);
+            opacity: 1;
+          }
+        }
+
         @keyframes mobileAutoMarquee {
           from {
             transform: translate3d(0, 0, 0);
@@ -180,6 +221,18 @@
     `;
 
     document.head.appendChild(style);
+  }
+
+  function setupRoomsSwipeHint() {
+    const roomsGrid = document.querySelector(".rooms .card-grid");
+    if (!roomsGrid || document.querySelector(".rooms-swipe-hint")) return;
+
+    const hint = document.createElement("div");
+    hint.className = "rooms-swipe-hint";
+    hint.setAttribute("aria-hidden", "true");
+    hint.innerHTML = '<span>Scorri</span><span class="rooms-swipe-hint-arrow">→</span>';
+
+    roomsGrid.insertAdjacentElement("afterend", hint);
   }
 
   function updateHeader() {
@@ -320,6 +373,7 @@
   }
 
   injectMobileSectionStyles();
+  setupRoomsSwipeHint();
   navToggle?.addEventListener("click", toggleMenu);
   navLinks.forEach((link) => link.addEventListener("click", closeMenu));
   window.addEventListener("scroll", updateHeader, { passive: true });
