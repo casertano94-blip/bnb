@@ -10,6 +10,126 @@
 
   const whatsappNumber = "393331234567";
 
+  function injectMobileSectionStyles() {
+    if (document.getElementById("mobile-rooms-services-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "mobile-rooms-services-style";
+    style.textContent = `
+      @media (max-width: 760px) {
+        .rooms {
+          overflow-x: hidden;
+        }
+
+        .rooms .section-heading {
+          margin-bottom: 30px;
+        }
+
+        .rooms .card-grid {
+          display: flex;
+          grid-template-columns: unset;
+          gap: 16px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          scroll-snap-type: x proximity;
+          scroll-padding-left: 12px;
+          -webkit-overflow-scrolling: touch;
+          touch-action: pan-x pan-y;
+          overscroll-behavior-x: contain;
+          margin-left: -12px;
+          margin-right: -12px;
+          padding: 4px 12px 20px;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .rooms .card-grid::-webkit-scrollbar {
+          display: none;
+        }
+
+        .rooms .room-card {
+          flex: 0 0 min(84vw, 370px);
+          min-width: min(84vw, 370px);
+          scroll-snap-align: start;
+          scroll-snap-stop: normal;
+        }
+
+        .rooms .room-card img {
+          aspect-ratio: 1.18;
+        }
+
+        .services .section-heading {
+          margin-bottom: 26px;
+        }
+
+        .services .services-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          border: 1px solid var(--color-line);
+          border-radius: var(--radius-md);
+          background: rgba(255, 255, 255, 0.72);
+          box-shadow: 0 18px 44px rgba(23, 38, 59, 0.08);
+          padding: 12px;
+        }
+
+        .services .service-item {
+          min-height: auto;
+          display: grid;
+          grid-template-columns: 34px 1fr;
+          align-items: center;
+          gap: 10px;
+          border: 0;
+          border-radius: 14px;
+          background: rgba(244, 234, 220, 0.72);
+          box-shadow: none;
+          padding: 12px;
+        }
+
+        .services .service-item span {
+          width: 34px;
+          height: 34px;
+          margin: 0;
+          font-size: 0.72rem;
+        }
+
+        .services .service-item h3 {
+          font-size: 0.92rem;
+          line-height: 1.18;
+        }
+
+        .services .service-item p {
+          display: none;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .services .services-grid {
+          gap: 8px;
+          padding: 10px;
+        }
+
+        .services .service-item {
+          grid-template-columns: 30px 1fr;
+          gap: 8px;
+          padding: 10px;
+        }
+
+        .services .service-item span {
+          width: 30px;
+          height: 30px;
+          font-size: 0.66rem;
+        }
+
+        .services .service-item h3 {
+          font-size: 0.84rem;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
   function updateHeader() {
     if (!header) return;
     header.classList.toggle("is-scrolled", window.scrollY > 16);
@@ -96,6 +216,7 @@
     });
   }
 
+  injectMobileSectionStyles();
   navToggle?.addEventListener("click", toggleMenu);
   navLinks.forEach((link) => link.addEventListener("click", closeMenu));
   window.addEventListener("scroll", updateHeader, { passive: true });
