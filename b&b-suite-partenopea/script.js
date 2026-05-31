@@ -7,6 +7,7 @@
   const navLinks = document.querySelectorAll(".nav-links a, .nav-cta");
   const parallaxTarget = document.querySelector("[data-parallax]");
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileQuery = window.matchMedia("(max-width: 760px)");
 
   const whatsappNumber = "393331234567";
 
@@ -17,7 +18,9 @@
     style.id = "mobile-rooms-services-style";
     style.textContent = `
       @media (max-width: 760px) {
-        .rooms {
+        .rooms,
+        .gallery,
+        .reviews {
           overflow-x: hidden;
         }
 
@@ -28,17 +31,16 @@
         .rooms .card-grid {
           display: flex;
           grid-template-columns: unset;
-          gap: 16px;
+          gap: 0;
           overflow-x: auto;
           overflow-y: hidden;
-          scroll-snap-type: x proximity;
-          scroll-padding-left: 12px;
+          scroll-snap-type: x mandatory;
+          scroll-padding-inline: 0;
           -webkit-overflow-scrolling: touch;
           touch-action: pan-x pan-y;
           overscroll-behavior-x: contain;
-          margin-left: -12px;
-          margin-right: -12px;
-          padding: 4px 12px 20px;
+          margin-inline: 0;
+          padding: 4px 0 20px;
           scrollbar-width: none;
           -ms-overflow-style: none;
         }
@@ -48,17 +50,19 @@
         }
 
         .rooms .room-card {
-          flex: 0 0 min(84vw, 370px);
-          min-width: min(84vw, 370px);
-          scroll-snap-align: start;
-          scroll-snap-stop: normal;
+          flex: 0 0 100%;
+          min-width: 100%;
+          scroll-snap-align: center;
+          scroll-snap-stop: always;
         }
 
         .rooms .room-card img {
           aspect-ratio: 1.18;
         }
 
-        .services .section-heading {
+        .services .section-heading,
+        .gallery .section-heading,
+        .reviews .section-heading {
           margin-bottom: 26px;
         }
 
@@ -100,6 +104,54 @@
 
         .services .service-item p {
           display: none;
+        }
+
+        .gallery-grid.is-auto-marquee,
+        .review-grid.is-auto-marquee {
+          display: flex;
+          grid-template-columns: unset;
+          width: max-content;
+          gap: 14px;
+          overflow: visible;
+          animation: mobileAutoMarquee var(--mobile-marquee-duration, 34s) linear infinite;
+          will-change: transform;
+        }
+
+        .gallery-grid.is-auto-marquee {
+          grid-auto-rows: unset;
+        }
+
+        .gallery-grid.is-auto-marquee .gallery-item,
+        .gallery-grid.is-auto-marquee .gallery-item.large,
+        .gallery-grid.is-auto-marquee .gallery-item.wide {
+          flex: 0 0 min(78vw, 330px);
+          width: min(78vw, 330px);
+          height: 232px;
+          grid-column: auto;
+          grid-row: auto;
+          margin: 0;
+        }
+
+        .review-grid.is-auto-marquee .review-card {
+          flex: 0 0 min(84vw, 360px);
+          width: min(84vw, 360px);
+          min-height: 244px;
+        }
+
+        .gallery-grid.is-auto-marquee .reveal-card,
+        .review-grid.is-auto-marquee .reveal-card {
+          opacity: 1;
+          transform: none;
+          transition-delay: 0ms !important;
+        }
+
+        @keyframes mobileAutoMarquee {
+          from {
+            transform: translate3d(0, 0, 0);
+          }
+          to {
+            transform: translate3d(calc(var(--mobile-marquee-shift, 900px) * -1), 0, 0);
+          }
         }
       }
 
@@ -189,6 +241,57 @@
     parallaxTarget.style.transform = `translate3d(0, ${offset}px, 0) scale(1.04)`;
   }
 
+  function setupAutoMarquee(trackSelector, baseDuration) {
+    const track = document.querySelector(trackSelector);
+    if (!track) return;
+
+    if (!track.dataset.originalCount) {
+      track.dataset.originalCount = String(track.children.length);
+    }
+
+    const originalCount = Number(track.dataset.originalCount);
+    const originalItems = Array.from(track.children).slice(0, originalCount);
+
+    if (!track.dataset.marqueeCloned) {
+      originalItems.forEach((item) => {
+        const clone = item.cloneNode(true);
+        clone.classList.add("marquee-clone");
+        clone.setAttribute("aria-hidden", "true");
+        track.appendChild(clone);
+      });
+      track.dataset.marqueeCloned = "true";
+    }
+
+    const update = () => {
+      if (!mobileQuery.matches || motionQuery.matches) {
+        track.classList.remove("is-auto-marquee");
+        return;
+      }
+
+      track.classList.add("is-auto-marquee");
+
+      requestAnimationFrame(() => {
+        const styles = window.getComputedStyle(track);
+        const gap = Number.parseFloat(styles.columnGap || styles.gap) || 0;
+        const shift = originalItems.reduce((total, item) => {
+          return total + item.getBoundingClientRect().width;
+        }, 0) + gap * originalItems.length;
+        const duration = Math.max(baseDuration, shift / 22);
+
+        track.style.setProperty("--mobile-marquee-shift", `${shift}px`);
+        track.style.setProperty("--mobile-marquee-duration", `${duration}s`);
+      });
+    };
+
+    update();
+    window.addEventListener("resize", update, { passive: true });
+  }
+
+  function setupMobileAutoMarquees() {
+    setupAutoMarquee(".gallery-grid", 34);
+    setupAutoMarquee(".review-grid", 30);
+  }
+
   function setupFormWhatsAppFallback() {
     const form = document.querySelector(".booking-form");
     if (!form) return;
@@ -231,5 +334,6 @@
   updateHeader();
   updateParallax();
   setupRevealAnimations();
+  setupMobileAutoMarquees();
   setupFormWhatsAppFallback();
 })();
